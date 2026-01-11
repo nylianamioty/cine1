@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="page-purchase">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acheter un billet</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Barre de navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">🎬</span>
+        Cinéma Paradis
+      </a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/" class="nav-link">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a href="/tickets/purchase" class="nav-link active">Acheter un billet</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Contenu principal -->
+  <div class="container">
+    <div class="purchase-header">
+      <h1>Acheter un billet</h1>
+    </div>
+    
+    <div class="content">
+      <div th:if="${seance != null}">
+        <div class="film-info">
+          <div style="font-size: 1.5rem; margin-bottom: 20px; color: #ff7b00;">
+            🎬 <span th:text="${seance.film.titre}">Titre</span>
+          </div>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Date et heure</span>
+              <span class="info-value" th:text="${#temporals.format(seance.dateHeureDebut, 'dd/MM/yyyy HH:mm')}">2026-01-10T10:00</span>
+            </div>
+            
+            <div class="info-item">
+              <span class="info-label">Nombre de billets</span>
+              <span class="info-value" th:text="${count}">0</span>
+            </div>
+            
+            <div class="info-item">
+              <span class="info-label">Prix unité</span>
+              <span class="info-value" th:text="${unitPrice}">0.00</span> €
+            </div>
+            
+            <div class="info-item price-highlight">
+              <span class="info-label">Prix total</span>
+              <span class="info-value price-value" th:text="${total}">0.00</span> €
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <form th:action="@{/purchase/confirm}" method="post">
+            <input type="hidden" name="seanceId" th:value="${seance.id}" />
+            <input type="hidden" name="clientId" th:value="${client.id}" />
+            <div th:each="sId : ${seatIds}">
+              <input type="hidden" name="seatIds" th:value="${sId}" />
+            </div>
+            
+            <div class="form-group">
+              <label>Mode de paiement</label>
+              <select name="paymentModeId" required>
+                <option value="" disabled selected>Sélectionnez un mode de paiement</option>
+                <option th:each="m : ${modes}" th:value="${m.id}" th:text="${m.libelle}"></option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Date de paiement</label>
+              <input type="date" name="paymentDate" th:value="${T(java.time.LocalDate).now()}" required />
+            </div>
+            
+            <button type="submit" class="btn">Confirmer et payer</button>
+          </form>
+        </div>
+        
+        <div class="debug-info" th:if="${modes != null and #lists.size(modes) == 0}">
+          <p><strong>DEBUG:</strong> Aucun mode de paiement disponible. seance id: <span th:text="${seance != null ? seance.id : 'null'}">?</span></p>
+        </div>
+      </div>
+      
+      <div th:if="${seance == null}" class="empty-state">
+        <div class="ticket-icon">🎫</div>
+        <p>Aucune séance sélectionnée.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

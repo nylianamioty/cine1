@@ -1,0 +1,183 @@
+/* seance.css - Styles pour la page séance */
+
+/* Style de base */
+body {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  color: #fff;
+  min-height: 100vh;
+  padding-top: 80px; /* Pour la navbar */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+/* Titre */
+h1 {
+  color: #e50914;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+}
+
+/* Formulaire */
+form {
+  background: rgba(40, 40, 60, 0.8);
+  padding: 25px;
+  border-radius: 15px;
+  border-left: 4px solid #ff7b00;
+}
+
+/* Label client */
+label[for] {
+  color: #a5d8ff;
+  font-weight: bold;
+  margin-bottom: 15px;
+  display: block;
+}
+
+input[type="number"] {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  margin-left: 10px;
+}
+
+/* Rangées */
+div > div > div {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+strong {
+  color: #ff7b00;
+  font-size: 1.2rem;
+  display: block;
+  margin-bottom: 10px;
+  padding-left: 10px;
+  border-left: 3px solid #ff7b00;
+}
+
+/* SIÈGES - STYLE AMÉLIORÉ */
+.seat {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  text-align: center;
+  line-height: 40px;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.seat.taken {
+  background: #7f8c8d;
+  color: #bdc3c7;
+  cursor: not-allowed;
+  border: 2px solid #6c7b7d;
+  opacity: 0.7;
+}
+
+.seat.available {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: white;
+  border: 2px solid #27ae60;
+  cursor: pointer;
+}
+
+.seat.available:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+}
+
+/* Style pour les sièges sélectionnés */
+.seat input[type="checkbox"]:checked + span {
+  background: linear-gradient(135deg, #e50914, #ff7b00) !important;
+  border-color: #e50914 !important;
+  color: white !important;
+  transform: scale(1.1);
+}
+
+/* Cache les checkboxes */
+.seat input[type="checkbox"] {
+  display: none;
+}
+
+/* Bouton */
+button[type="submit"] {
+  background: linear-gradient(90deg, #e50914, #ff7b00);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 50px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+  font-size: 1.1rem;
+  display: block;
+  margin: 30px auto 0;
+}
+
+button[type="submit"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(229, 9, 20, 0.6);
+  background: linear-gradient(90deg, #ff7b00, #e50914);
+}
+
+/* Lien retour */
+p a {
+  color: #a5d8ff;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: all 0.3s;
+  border: 1px solid rgba(165, 216, 255, 0.3);
+  display: inline-block;
+  margin-top: 20px;
+}
+
+p a:hover {
+  background: rgba(165, 216, 255, 0.1);
+  border-color: #e50914;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .seat {
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    margin: 3px;
+    font-size: 0.9rem;
+  }
+  
+  .container {
+    padding: 15px;
+    margin: 10px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+}

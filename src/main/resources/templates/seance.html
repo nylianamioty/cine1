@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Plan de salle</title>
+  <!-- Ajout du CSS -->
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/seance.css">
+</head>
+<body>
+  <!-- Ajout de la barre de navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">🎬</span>
+        Cinéma Paradis
+      </a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/" class="nav-link">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a href="/tickets/purchase" class="nav-link">Acheter un billet</a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link active">Séance</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- VOTRE CODE ORIGINAL (sans modifications) -->
+  <div class="container">
+    <h1 th:text="${seance.film.titre} + ' - ' + ${seance.dateHeureDebut}">Séance</h1>
+    <form th:action="@{/seances/{id}/reserve(id=${seance.id})}" method="post">
+      <input type="hidden" name="seanceId" th:value="${seance.id}" />
+      <label>Client id: <input type="number" name="clientId" value="1"/></label>
+      <div>
+        <div th:each="entry : ${rows.entrySet()}">
+          <div><strong>Rangée <span th:text="${entry.key}"></span></strong></div>
+          <div>
+            <label th:each="s : ${entry.value}" th:class="${s.taken} ? 'seat taken' : 'seat available'" style="display:inline-block;">
+              <input th:if="${!s.taken}" type="checkbox" name="seatIds" th:value="${s.id}"/>
+              <span th:text="${s.numero}"></span>
+            </label>
+          </div>
+          <br/>
+        </div>
+      </div>
+      <br/>
+      <button type="submit">Réserver</button>
+    </form>
+    <p><a th:href="@{/films/{id}(id=${seance.film.id})}">Retour au film</a></p>
+  </div>
+</body>
+</html>

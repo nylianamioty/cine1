@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="page-film">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${film.titre}">Film</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Barre de navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">🎬</span>
+        Cinéma Paradis
+      </a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/" class="nav-link">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a href="/tickets/purchase" class="nav-link">Acheter un billet</a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link active">Film</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Contenu principal -->
+  <div class="container">
+    <div class="film-header">
+      <h1 th:text="${film.titre}">Titre</h1>
+    </div>
+    
+    <div class="film-content">
+      <div class="film-details">
+        <p><span class="detail-label">Durée:</span> <span class="detail-value" th:text="${film.duree}">0</span> minutes</p>
+        <p><span class="detail-label">Langue:</span> <span class="detail-value" th:text="${film.langue}">VO</span></p>
+        <p><span class="detail-label">Date de sortie:</span> <span class="detail-value" th:text="${film.dateDeSortie}">-</span></p>
+        
+        <div class="synopsis">
+          <p><span class="detail-label">Synopsis:</span></p>
+          <p class="detail-value" th:text="${film.synopsis}">-</p>
+        </div>
+      </div>
+      
+      <div class="seances-section">
+        <h2>Séances disponibles</h2>
+        <div class="seances-count">
+          Nombre de séances: <span th:text="${seances != null ? seances.size() : 0}">0</span>
+        </div>
+        
+        <ul class="seance-list">
+          <li class="seance-item" th:each="s : ${seances}">
+            <a class="seance-link" th:href="@{/seances/{id}(id=${s.id})}">
+              <div class="seance-date" th:text="${#temporals.format(s.dateHeureDebut, 'yyyy-MM-dd HH:mm')}">date</div>
+              <div class="seance-info">
+                <span class="seance-salle">Salle <span th:text="${s.salle != null ? s.salle.num : 'N/A'}">N</span></span>
+                <span class="seance-prix"><span th:text="${s.prix}">0.00</span> Ar</span>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="btn-container">
+      <a class="btn" th:href="@{/}">Retour à l'accueil</a>
+    </div>
+  </div>
+</body>
+</html>

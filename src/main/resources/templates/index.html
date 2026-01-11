@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="page-index">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinéma - Films à l'affiche</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Barre de navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">🎬</span>
+        Cinéma Paradis
+      </a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/" class="nav-link active">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a href="/tickets/purchase" class="nav-link">Acheter un billet</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Contenu principal -->
+  <div class="header">
+    <h1>Cinéma Paradis</h1>
+    <div class="subtitle">Votre salle de cinéma premium</div>
+  </div>
+  
+  <div class="screen-effect"></div>
+  
+  <h1 style="text-align: center; margin-bottom: 40px; color: #ff7b00;">Films à l'affiche</h1>
+  
+  <div class="films-grid">
+    <div class="film-card" th:each="film : ${films}">
+      <a class="film-link" th:href="@{/films/{id}(id=${film.id})}" th:text="${film.titre}">Film</a>
+    </div>
+  </div>
+  
+  <div class="footer">
+    © 2026 Cinéma Paradis - Tous droits réservés
+  </div>
+</body>
+</html>

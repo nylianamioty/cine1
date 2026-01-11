@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="page-confirmation">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmation</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Barre de navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">🎬</span>
+        Cinéma Paradis
+      </a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/" class="nav-link">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a href="/tickets/purchase" class="nav-link">Acheter un billet</a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link active">Confirmation</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Contenu principal -->
+  <div class="container">
+    <div class="cinema-clapper">🎬</div>
+    <h1>Confirmation d'achat</h1>
+    
+    <div class="confirmation-card" th:if="${billetId}">
+      <p>Votre billet a été créé avec succès !</p>
+      <p>ID du billet: <span class="billet-id" th:text="${billetId}">#{billetId}</span></p>
+    </div>
+    
+    <div class="confirmation-card" th:if="${billets}">
+      <p>Vos billets ont été créés avec succès :</p>
+      <ul>
+        <li th:each="b : ${billets}">
+          <strong>Billet ID:</strong> <span class="billet-id" th:text="${b.id}"></span><br>
+          <strong>Siège:</strong> <span style="color: #4dabf7;" th:text="${b.siege.numero}"></span>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="btn-container">
+      <a class="btn" th:href="@{/tickets/purchase}">Acheter un autre billet</a>
+    </div>
+  </div>
+</body>
+</html>
