@@ -67,7 +67,6 @@ CREATE TABLE seance(
    idSalle INT NOT NULL,
    date_heure_debut TIMESTAMP NOT NULL,
    version VARCHAR(50),
-   prix DECIMAL(8, 2) NOT NULL,
    FOREIGN KEY (idFilm) REFERENCES film(id) ON DELETE CASCADE,
    FOREIGN KEY (idSalle) REFERENCES salle(id) ON DELETE CASCADE
 );
@@ -84,8 +83,8 @@ CREATE TABLE client(
 CREATE TABLE tarif(
    id SERIAL PRIMARY KEY,
    nom VARCHAR(50) NOT NULL,
-   age_min INT,
-   age_max INT NOT NULL,
+   -- age_min INT,
+   -- age_max INT NOT NULL,
    prix DECIMAL(8, 2) NOT NULL,
    idTypeSalle INT NOT NULL,
    actif BOOLEAN DEFAULT TRUE,
@@ -101,19 +100,42 @@ CREATE TABLE tarif_typesiege(
    FOREIGN KEY (idtypesiege) REFERENCES typesiege(id) ON DELETE CASCADE,
    UNIQUE(idtarif, idtypesiege)
 );
-
+CREATE TABLE tarif_typesiege_seance(
+   id SERIAL PRIMARY KEY,
+   idtarif_typesiege INT NOT NULL,
+   idseance INT NOT NULL,
+   prix DECIMAL(8, 2),
+   FOREIGN KEY (idtarif_typesiege) REFERENCES tarif_typesiege(id) ON DELETE CASCADE,
+   FOREIGN KEY (idseance) REFERENCES seance(id) ON DELETE CASCADE,
+   UNIQUE(idtarif_typesiege, idseance)   
+);
+CREATE TABLE categorie_age(
+   id SERIAL PRIMARY KEY,
+   categ VARCHAR(50) NOT NULL,
+   age_min INT,
+   age_max INT NOT NULL
+);
+CREATE TABLE tarif_typesiege_categorie(
+   id SERIAL PRIMARY KEY,
+   idtarif_typesiege INT NOT NULL,
+   idcategorie_age INT NOT NULL,
+   prix DECIMAL(8, 2),
+   FOREIGN KEY (idtarif_typesiege) REFERENCES tarif_typesiege(id) ON DELETE CASCADE,
+   FOREIGN KEY (idcategorie_age) REFERENCES categorie_age(id) ON DELETE CASCADE,
+   UNIQUE(idtarif_typesiege, idcategorie_age)   
+);
 CREATE TABLE billet(
    id SERIAL PRIMARY KEY,
    idSeance INT NOT NULL,
    idSiege INT NOT NULL,
    idClient INT NOT NULL,
-   idtarif_typesiege INT NOT NULL,
+   idcategorie_age INT,
    prix DECIMAL(8, 2) NOT NULL,
-   statut BOOLEAN DEFAULT FALSE,
+   statut VARCHAR(20) NOT NULL DEFAULT 'RESERVE',
    FOREIGN KEY (idSeance) REFERENCES seance(id) ON DELETE CASCADE,
    FOREIGN KEY (idSiege) REFERENCES siege(id) ON DELETE RESTRICT,
    FOREIGN KEY (idClient) REFERENCES client(id) ON DELETE CASCADE,
-   FOREIGN KEY (idtarif_typesiege) REFERENCES tarif_typesiege(id) ON DELETE RESTRICT
+   FOREIGN KEY (idcategorie_age) REFERENCES categorie_age(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE modePaiement(
@@ -172,35 +194,25 @@ CREATE TABLE vente_produit_paiement(
    FOREIGN KEY (idpaiement) REFERENCES paiement(id) ON DELETE CASCADE,
    UNIQUE(idvente_produit, idpaiement)
 );
-
--- Exemple de données pour tester l'achat d'un billet (Avatar 10 Jan 2026 10:00)
-INSERT INTO typesalle(libelle) VALUES ('Standard');
-INSERT INTO typesiege(libelle) VALUES ('Normal');
-INSERT INTO tarif(nom, age_min, age_max, prix, idTypeSalle, actif) VALUES ('Normal', 0, 120, 8.50, 1, TRUE);
-INSERT INTO tarif_typesiege(idtarif, idtypesiege, prix) VALUES (1, 1, 8.50);
-
-INSERT INTO cinema(nom, adresse, ville, telephone, email) VALUES ('Cinema Central', '1 rue Exemple', 'Ville', '0123456789', 'contact@cinema.test');
-INSERT INTO salle(num, idcinema, capacite, idtypesalle, acces_pmr) VALUES (1, 1, 100, 1, FALSE);
-
--- Crée 100 sièges pour la salle 1
-DO $$
-DECLARE i INT := 1;
-BEGIN
-   WHILE i <= 100 LOOP
-      INSERT INTO siege(idSalle, rangee, numero, idTypeSiege) VALUES (1, 'A', i, 1);
-      i := i + 1;
-   END LOOP;
-END $$;
-
-INSERT INTO genre(libelle) VALUES ('Action');
-INSERT INTO classification(libelle) VALUES ('PG-13');
-INSERT INTO film(titre, duree, idGenre, langue, synopsis, idClassification, date_de_sortie) VALUES ('Avatar', 162, 1, 'VO', 'Film de science-fiction', 1, '2009-12-18');
-
--- Seance Avatar le 10 janvier 2026 à 10:00
-INSERT INTO seance(idFilm, idSalle, date_heure_debut, version, prix) VALUES (1, 1, '2026-01-10 10:00:00', '2D', 8.50);
-
--- Client exemple
-INSERT INTO client(nom, prenom, email, telephone) VALUES ('Dupont', 'Jean', 'jean.dupont@example.com', '0600000000');
-
--- Mode de paiement exemple
-INSERT INTO modePaiement(libelle) VALUES ('Carte');
+CREATE TABLE societe(
+   id SERIAL PRIMARY KEY,
+   nom VARCHAR(50) NOT NULL,
+   email VARCHAR(50) NOT NULL,
+   telephone VARCHAR(50) NOT NULL
+);
+CREATE TABLE publicite(
+   id SERIAL PRIMARY KEY,
+   titre VARCHAR(100) NOT NULL,
+   duree INT NOT NULL,
+   idSociete INT NOT NULL,
+   FOREIGN KEY (idSociete) REFERENCES societe(id) ON DELETE CASCADE
+);
+CREATE TABLE diffusion_publicite(
+   id SERIAL PRIMARY KEY,
+   idPublicite INT NOT NULL,
+   idSeance INT NOT NULL,
+   prix DECIMAL(8, 2) NOT NULL,
+   FOREIGN KEY (idPublicite) REFERENCES publicite(id) ON DELETE CASCADE,
+   FOREIGN KEY (idSeance) REFERENCES seance(id) ON DELETE CASCADE,
+   UNIQUE(idPublicite, idSeance)
+);

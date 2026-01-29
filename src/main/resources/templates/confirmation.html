@@ -5,9 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmation</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    .receipt {
+      max-width: 600px;
+      margin: 20px auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px solid #333;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+    .receipt-section {
+      margin-bottom: 15px;
+    }
+    .receipt-section h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .receipt-total {
+      background-color: #e3f2fd;
+      padding: 15px;
+      border-radius: 4px;
+      text-align: right;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <!-- Barre de navigation -->
   <nav class="navbar">
     <div class="nav-container">
       <a href="/" class="nav-logo">
@@ -19,37 +56,58 @@
           <a href="/" class="nav-link">Accueil</a>
         </li>
         <li class="nav-item">
-          <a href="/tickets/purchase" class="nav-link">Acheter un billet</a>
+          <a href="/stats" class="nav-link">Statistiques</a>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link active">Confirmation</a>
+          <a href="/products" class="nav-link">Produits</a>
         </li>
       </ul>
     </div>
   </nav>
 
-  <!-- Contenu principal -->
   <div class="container">
     <div class="cinema-clapper">🎬</div>
     <h1>Confirmation d'achat</h1>
     
-    <div class="confirmation-card" th:if="${billetId}">
-      <p>Votre billet a été créé avec succès !</p>
-      <p>ID du billet: <span class="billet-id" th:text="${billetId}">#{billetId}</span></p>
-    </div>
-    
-    <div class="confirmation-card" th:if="${billets}">
-      <p>Vos billets ont été créés avec succès :</p>
-      <ul>
-        <li th:each="b : ${billets}">
-          <strong>Billet ID:</strong> <span class="billet-id" th:text="${b.id}"></span><br>
-          <strong>Siège:</strong> <span style="color: #4dabf7;" th:text="${b.siege.numero}"></span>
-        </li>
-      </ul>
+    <div class="receipt" th:if="${billets}">
+      <div class="receipt-header">
+        <h2>REÇU D'ACHAT</h2>
+        <p th:text="'Date: ' + ${#temporals.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}"></p>
+      </div>
+      
+      <div class="receipt-section">
+        <h3>🎬 Détails de la séance</h3>
+        <div th:if="${billets[0].seance}">
+          <div class="receipt-item">
+            <span>Film :</span>
+            <span th:text="${billets[0].seance.film.titre}">Titanic</span>
+          </div>
+          <div class="receipt-item">
+            <span>Date/Heure :</span>
+            <span th:text="${#temporals.format(billets[0].seance.dateHeureDebut, 'dd/MM/yyyy HH:mm')}">20/01/2026 10:00</span>
+          </div>
+          <div class="receipt-item">
+            <span>Salle :</span>
+            <span th:text="${billets[0].seance.salle.num}">1</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="receipt-section">
+        <h3>🎫 Billets</h3>
+        <div th:each="b : ${billets}" class="receipt-item">
+          <span>Siège <span th:text="${b.siege.numero}"></span> (Rangée <span th:text="${b.siege.rangee}"></span>)</span>
+          <span th:text="${b.prix}">50000</span> Ar
+        </div>
+      </div>
+      
+      <div class="receipt-total">
+        Montant total billets : <span th:text="${totalBillets}">0.00</span> Ar
+      </div>
     </div>
     
     <div class="btn-container">
-      <a class="btn" th:href="@{/tickets/purchase}">Acheter un autre billet</a>
+      <a class="btn" href="/">Retour à l'accueil</a>
     </div>
   </div>
 </body>

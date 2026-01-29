@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Produits - Boutique</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .product-form {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .product-form input {
+      width: 60px;
+    }
+    .product-form select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .success-msg {
+      background-color: #51cf66;
+      color: white;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">🎬 Cinéma Paradis</a>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="/" class="nav-link">Accueil</a></li>
+        <li class="nav-item"><a href="/products" class="nav-link active">Produits</a></li>
+        <li class="nav-item"><a href="/cart" class="nav-link">Panier</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Produits extras</h1>
+    
+    <div th:if="${param.success}" class="success-msg">
+      ✓ Achat confirmé avec succès !
+    </div>
+    
+    <table>
+      <thead>
+        <tr><th>Produit</th><th>Prix</th><th>Stock</th><th>Quantité</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${products}">
+          <td th:text="${p.nom}">Pop corn</td>
+          <td th:text="${p.prix}">10000</td>
+          <td th:text="${p.stock}">100</td>
+          <td>
+            <form th:action="@{/products/buy}" method="post" class="product-form">
+              <input type="hidden" name="productId" th:value="${p.id}" />
+              <input type="number" name="quantity" value="1" min="1" />
+              <input type="hidden" name="clientId" value="1" />
+              <button type="submit">Ajouter au panier</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

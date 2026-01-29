@@ -34,9 +34,12 @@ public class Billet {
     @Column(name = "idtarif_typesiege")
     private Long tarifTypesiegeId;
 
+    @Column(name = "idcategorie_age")
+    private Long categorieAgeId;
+
     private BigDecimal prix;
 
-    private Boolean statut = Boolean.FALSE;
+    private String statut = "EN_ATTENTE";
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -48,8 +51,10 @@ public class Billet {
     public void setClient(Client client) { this.client = client; }
     public Long getTarifTypesiegeId() { return tarifTypesiegeId; }
     public void setTarifTypesiegeId(Long tarifTypesiegeId) { this.tarifTypesiegeId = tarifTypesiegeId; }
+    public Long getCategorieAgeId() { return categorieAgeId; }
+    public void setCategorieAgeId(Long categorieAgeId) { this.categorieAgeId = categorieAgeId; }
     public BigDecimal getPrix() { return prix; }
     public void setPrix(BigDecimal prix) { this.prix = prix; }
-    public Boolean getStatut() { return statut; }
-    public void setStatut(Boolean statut) { this.statut = statut; }
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
 }

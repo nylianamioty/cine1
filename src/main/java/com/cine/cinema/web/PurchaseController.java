@@ -62,7 +62,11 @@ public class PurchaseController {
                                Model model) {
         Seance seance = seanceRepository.findById(seanceId).orElse(null);
         Client client = clientRepository.findById(clientId).orElse(null);
-        List<Siege> sieges = siegeRepository.findAllById(seatIds);
+        // load sieges preserving the order of seatIds so category selections map to correct seats
+        List<Siege> sieges = seatIds.stream()
+            .map(id -> siegeRepository.findById(id).orElse(null))
+            .filter(s -> s != null)
+            .collect(java.util.stream.Collectors.toList());
 
         TarifTypesiege tarif = tarifTypesiegeRepository.findAll().stream().findFirst().orElse(null);
         java.math.BigDecimal unit = tarif != null && tarif.getPrix() != null ? tarif.getPrix() : (seance != null ? seance.getPrix() : java.math.BigDecimal.ZERO);
@@ -88,6 +92,39 @@ public class PurchaseController {
             }
         }
         model.addAttribute("modes", modes);
+        // load age categories
+        List<java.util.Map<String,Object>> categories = jdbcTemplate.queryForList("select id, categ from categorie_age order by id");
+        model.addAttribute("categories", categories);
+        model.addAttribute("tarifTypesiegeId", tarif != null ? tarif.getId() : null);
+
+        // compute per-seat category prices (based on existing tarif and seat type)
+        java.util.Map<Long, java.util.List<java.util.Map<String,Object>>> categoriesPerSeat = new java.util.HashMap<>();
+        for (Siege s : sieges) {
+            Integer siegeTypeId = jdbcTemplate.queryForObject("select idTypeSiege from siege where id = ?", new Object[]{s.getId()}, Integer.class);
+            java.util.List<java.util.Map<String,Object>> opts = new java.util.ArrayList<>();
+            for (java.util.Map<String,Object> c : categories) {
+                Long catId = ((Number)c.get("id")).longValue();
+                String categ = (String)c.get("categ");
+                java.math.BigDecimal price = unit;
+                try {
+                    // find tarif that matches category name
+                    Long tarifIdForCat = jdbcTemplate.queryForObject("select id from tarif where lower(nom) like ? limit 1", new Object[]{"%" + categ.toLowerCase() + "%"}, Long.class);
+                    if (tarifIdForCat != null) {
+                        java.math.BigDecimal p = jdbcTemplate.queryForObject("select prix from tarif_typesiege where idtarif = ? and idtypesiege = ?", new Object[]{tarifIdForCat, siegeTypeId}, java.math.BigDecimal.class);
+                        if (p != null) price = p;
+                    }
+                } catch (Exception ex) {
+                    // ignore, fallback to unit
+                }
+                java.util.Map<String,Object> map = new java.util.HashMap<>();
+                map.put("id", catId);
+                map.put("categ", categ);
+                map.put("prix", price);
+                opts.add(map);
+            }
+            categoriesPerSeat.put(s.getId(), opts);
+        }
+        model.addAttribute("categoriesPerSeat", categoriesPerSeat);
 
         return "purchase";
     }
@@ -96,6 +133,7 @@ public class PurchaseController {
     public String confirmPurchase(@RequestParam Long seanceId,
                                   @RequestParam Long clientId,
                                   @RequestParam(name = "seatIds") List<Long> seatIds,
+                                  @RequestParam(name = "categorieIds", required = false) List<Long> categorieIds,
                                   @RequestParam Long paymentModeId,
                                   @RequestParam(required = false) String paymentDate,
                                   Model model) {
@@ -105,8 +143,17 @@ public class PurchaseController {
         } else {
             pd = java.time.LocalDate.now();
         }
-        List<Billet> created = ticketService.reserveSeats(seanceId, clientId, seatIds, paymentModeId.intValue(), pd, paiementRepository, paiementBilletRepository);
+        List<Billet> created = ticketService.reserveSeats(seanceId, clientId, seatIds, categorieIds, paymentModeId.intValue(), pd, paiementRepository, paiementBilletRepository);
+        
+        java.math.BigDecimal totalBillets = java.math.BigDecimal.ZERO;
+        for (Billet b : created) {
+            if (b.getPrix() != null) {
+                totalBillets = totalBillets.add(b.getPrix());
+            }
+        }
+        
         model.addAttribute("billets", created);
+        model.addAttribute("totalBillets", totalBillets);
         return "confirmation";
     }
 }

@@ -19,7 +19,10 @@
           <a href="/" class="nav-link">Accueil</a>
         </li>
         <li class="nav-item">
-          <a href="/tickets/purchase" class="nav-link active">Acheter un billet</a>
+          <a href="/stats" class="nav-link">Statistiques</a>
+        </li>
+        <li class="nav-item">
+          <a href="/products" class="nav-link">Produits</a>
         </li>
       </ul>
     </div>
@@ -33,6 +36,7 @@
     
     <div class="content">
       <div th:if="${seance != null}">
+      <p><a th:href="@{/seances/{id}(id=${seance.id})}" class="btn">Retour à la salle</a></p>
         <div class="film-info">
           <div style="font-size: 1.5rem; margin-bottom: 20px; color: #ff7b00;">
             🎬 <span th:text="${seance.film.titre}">Titre</span>
@@ -51,12 +55,12 @@
             
             <div class="info-item">
               <span class="info-label">Prix unité</span>
-              <span class="info-value" th:text="${unitPrice}">0.00</span> €
+              <span class="info-value" th:text="${unitPrice}">0.00</span> Ar
             </div>
             
             <div class="info-item price-highlight">
               <span class="info-label">Prix total</span>
-              <span class="info-value price-value" th:text="${total}">0.00</span> €
+              <span class="info-value price-value" id="totalPrice" th:text="${total}">0.00</span> Ar
             </div>
           </div>
         </div>
@@ -65,6 +69,7 @@
           <form th:action="@{/purchase/confirm}" method="post">
             <input type="hidden" name="seanceId" th:value="${seance.id}" />
             <input type="hidden" name="clientId" th:value="${client.id}" />
+            <input type="hidden" id="defaultUnitPrice" th:value="${unitPrice}" />
             <div th:each="sId : ${seatIds}">
               <input type="hidden" name="seatIds" th:value="${sId}" />
             </div>
@@ -75,6 +80,23 @@
                 <option value="" disabled selected>Sélectionnez un mode de paiement</option>
                 <option th:each="m : ${modes}" th:value="${m.id}" th:text="${m.libelle}"></option>
               </select>
+            </div>
+
+            <div class="form-group">
+              <label>Catégorie d'âge par billet</label>
+              <div th:each="s,iterStat : ${sieges}">
+                <div style="margin-bottom:8px">
+                  <span>Siege <span th:text="${s.numero}"></span> :</span>
+                  <select name="categorieIds" class="cat-select" required>
+                    <option value="" disabled selected>Sélectionnez</option>
+                    <option th:each="c : ${categoriesPerSeat[s.id]}"
+                            th:value="${c.id}"
+                            th:text="${c.categ}"
+                            th:attr="data-price=${c.prix}"></option>
+                  </select>
+                  &nbsp;<span class="seat-price">Prix: <span class="seat-price-value">0.00</span> Ar</span>
+                </div>
+              </div>
             </div>
             
             <div class="form-group">
@@ -97,5 +119,37 @@
       </div>
     </div>
   </div>
+  <script>
+    // dynamic price update per seat when category changes
+    document.addEventListener('DOMContentLoaded', function(){
+    const defaultUnit = parseFloat(document.getElementById('defaultUnitPrice') ? document.getElementById('defaultUnitPrice').value : 0) || 0;
+      function parsePrice(v){
+        if (v == null) return 0;
+        let n = parseFloat(v);
+        return isNaN(n) ? 0 : n;
+      }
+
+      function updateTotal(){
+        let sum = 0;
+        document.querySelectorAll('.cat-select').forEach(function(sel, idx){
+          const opt = sel.options[sel.selectedIndex];
+          const priceAttr = opt ? opt.getAttribute('data-price') : null;
+          const price = priceAttr ? parsePrice(priceAttr) : defaultUnit;
+          const priceSpan = sel.parentElement.querySelector('.seat-price-value');
+          if (priceSpan) priceSpan.textContent = price.toFixed(2);
+          sum += price;
+        });
+        const totalEl = document.getElementById('totalPrice');
+        if (totalEl) totalEl.textContent = sum.toFixed(2);
+      }
+
+      document.querySelectorAll('.cat-select').forEach(function(sel){
+        sel.addEventListener('change', updateTotal);
+      });
+
+      // initial compute
+      updateTotal();
+    });
+  </script>
 </body>
 </html>

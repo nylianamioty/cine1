@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panier</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .cart-empty {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .cart-total {
+      background-color: #f0f0f0;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      text-align: right;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .btn-container {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">🎬 Cinéma Paradis</a>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="/" class="nav-link">Accueil</a></li>
+        <li class="nav-item"><a href="/products" class="nav-link">Produits</a></li>
+        <li class="nav-item"><a href="/cart" class="nav-link active">Panier</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Panier</h1>
+    
+    <div th:if="${cartItems.isEmpty()}" class="cart-empty">
+      <p>Votre panier est vide</p>
+      <a href="/products" class="btn">Continuer les achats</a>
+    </div>
+    
+    <div th:if="${!cartItems.isEmpty()}">
+      <table>
+        <thead>
+          <tr><th>Produit</th><th>Prix</th><th>Quantité</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="item : ${cartItems}">
+            <td th:text="${item.nom}">Pop corn</td>
+            <td th:text="${item.prix}">10000</td>
+            <td th:text="${item.quantity}">2</td>
+            <td th:text="${item.itemTotal}">20000</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="cart-total">
+        Montant total : <span th:text="${cartTotal}">0.00</span> Ar
+      </div>
+      
+      <div class="btn-container">
+        <a href="/products" class="btn">Continuer les achats</a>
+        <form th:action="@{/cart/checkout}" method="post" style="display:flex; gap: 15px; align-items: center;">
+          <input type="hidden" name="clientId" th:value="${clientId}" />
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <label style="color: #fff; font-weight: bold;">Date de la vente</label>
+            <input type="date" name="dateVente" required style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; width: 200px;">
+          </div>
+          <button type="submit" class="btn" style="background-color: #51cf66;">Confirmer l'achat</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

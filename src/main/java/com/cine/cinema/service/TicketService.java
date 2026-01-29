@@ -26,15 +26,18 @@ public class TicketService {
     private final SiegeRepository siegeRepository;
     private final ClientRepository clientRepository;
         private final TarifTypesiegeRepository tarifTypesiegeRepository;
+        private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
         public TicketService(BilletRepository billetRepository, SeanceRepository seanceRepository,
                                                  SiegeRepository siegeRepository, ClientRepository clientRepository,
-                                                 TarifTypesiegeRepository tarifTypesiegeRepository) {
+                                                 TarifTypesiegeRepository tarifTypesiegeRepository,
+                                                 org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
                 this.billetRepository = billetRepository;
                 this.seanceRepository = seanceRepository;
                 this.siegeRepository = siegeRepository;
                 this.clientRepository = clientRepository;
                 this.tarifTypesiegeRepository = tarifTypesiegeRepository;
+                this.jdbcTemplate = jdbcTemplate;
         }
 
     @Transactional
@@ -72,13 +75,13 @@ public class TicketService {
         billet.setClient(client);
         billet.setTarifTypesiegeId(tarif.getId());
         billet.setPrix(tarif.getPrix() != null ? tarif.getPrix() : seance.getPrix());
-        billet.setStatut(Boolean.TRUE);
+        billet.setStatut("PAYE");
 
         return billetRepository.save(billet);
     }
 
         @Transactional
-        public java.util.List<Billet> reserveSeats(Long seanceId, Long clientId, java.util.List<Long> seatIds, Integer paymentModeId,
+        public java.util.List<Billet> reserveSeats(Long seanceId, Long clientId, java.util.List<Long> seatIds, java.util.List<Long> categorieIds, Integer paymentModeId,
                                                                                            java.time.LocalDate paymentDate,
                                                                                            com.cine.cinema.repository.PaiementRepository paiementRepo,
                                                                                            com.cine.cinema.repository.PaiementBilletRepository paiementBilletRepo) {
@@ -93,9 +96,13 @@ public class TicketService {
                 var already = billetRepository.findBySeance_IdAndSiege_IdIn(seanceId, seatIds);
                 if (!already.isEmpty()) throw new IllegalStateException("Un ou plusieurs sièges sont déjà réservés");
 
-                // fetch sieges
-                var sieges = siegeRepository.findAllById(seatIds);
-                if (sieges.size() != seatIds.size()) throw new IllegalStateException("Sièges invalides");
+                // fetch sieges preserving seatIds order
+                var sieges = new java.util.ArrayList<Siege>();
+                for (var id : seatIds) {
+                        var sOpt = siegeRepository.findById(id);
+                        if (sOpt.isEmpty()) throw new IllegalStateException("Sièges invalides");
+                        sieges.add(sOpt.get());
+                }
 
                 java.math.BigDecimal total = java.math.BigDecimal.ZERO;
                 java.util.ArrayList<Billet> created = new java.util.ArrayList<>();
@@ -104,15 +111,42 @@ public class TicketService {
                 if (tarifOpt.isEmpty()) throw new IllegalStateException("Aucun tarif disponible");
                 TarifTypesiege tarif = tarifOpt.get();
 
-                for (var s : sieges) {
+                for (int i = 0; i < sieges.size(); i++) {
+                        var s = sieges.get(i);
                         Billet b = new Billet();
                         b.setSeance(seance);
                         b.setSiege(s);
                         b.setClient(client);
                         java.math.BigDecimal price = tarif.getPrix() != null ? tarif.getPrix() : seance.getPrix();
+                        // if a category is selected, prefer the category-specific price if available
+                        if (categorieIds != null && categorieIds.size() == sieges.size()) {
+                                Long catId = categorieIds.get(i);
+                                try {
+                                        // find category name
+                                        String categ = jdbcTemplate.queryForObject("select categ from categorie_age where id = ?", new Object[]{catId}, String.class);
+                                        if (categ != null) {
+                                                // find tarif that matches category name (e.g., 'Tarif enfant')
+                                                Long tarifIdForCat = jdbcTemplate.queryForObject("select id from tarif where lower(nom) like ? limit 1", new Object[]{"%" + categ.toLowerCase() + "%"}, Long.class);
+                                                if (tarifIdForCat != null) {
+                                                        Integer siegeTypeId = jdbcTemplate.queryForObject("select idTypeSiege from siege where id = ?", new Object[]{s.getId()}, Integer.class);
+                                                        java.math.BigDecimal p = jdbcTemplate.queryForObject(
+                                                                "select prix from tarif_typesiege where idtarif = ? and idtypesiege = ?",
+                                                                new Object[]{tarifIdForCat, siegeTypeId}, java.math.BigDecimal.class);
+                                                        if (p != null) price = p;
+                                                }
+                                        }
+                                } catch (Exception ex) {
+                                        // fallback to tarif/seance price if no specific category price
+                                }
+                        }
                         b.setPrix(price);
                         b.setTarifTypesiegeId(tarif.getId());
-                        b.setStatut(Boolean.TRUE);
+                        // assign category if provided (parallel to seatIds)
+                        if (categorieIds != null && categorieIds.size() == sieges.size()) {
+                                Long catId = categorieIds.get(i);
+                                b.setCategorieAgeId(catId);
+                        }
+                        b.setStatut("PAYE");
                         created.add(b);
                         total = total.add(price != null ? price : java.math.BigDecimal.ZERO);
                 }
