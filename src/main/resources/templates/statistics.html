@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Statistiques - Chiffre d'affaire par séance</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .filter-section {
+      background-color: rgba(229, 9, 20, 0.2);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filter-group label {
+      font-weight: bold;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+    .filter-group input {
+      padding: 10px;
+      border: 1px solid rgba(229, 9, 20, 0.5);
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 0.95rem;
+    }
+    .filter-group input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .filter-section button {
+      background: linear-gradient(90deg, #e50914, #ff7b00);
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .filter-section button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+    }
+    .filter-section a {
+      padding: 10px 25px;
+      background-color: rgba(100, 100, 100, 0.6);
+      color: white;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .filter-section a:hover {
+      background-color: rgba(100, 100, 100, 0.9);
+    }
+    .summary-section {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1));
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      border-left: 5px solid #4caf50;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+      font-size: 1rem;
+      color: #fff;
+    }
+    .summary-row:last-child {
+      border-bottom: none;
+      font-weight: bold;
+      font-size: 1.3rem;
+      color: #4caf50;
+      padding-top: 15px;
+    }
+    .summary-label {
+      font-weight: 600;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">🎬 Cinéma Paradis</a>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="/" class="nav-link">Accueil</a></li>
+        <li class="nav-item"><a href="/stats" class="nav-link active">Statistiques</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Statistiques - Chiffre d'affaire par séance</h1>
+
+    <div class="filter-section">
+      <form method="get" th:action="@{/stats}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; width: 100%;">
+        <div class="filter-group">
+          <label>Date début</label>
+          <input type="date" name="dateDebut" th:value="${dateDebut}" />
+        </div>
+        <div class="filter-group">
+          <label>Date fin</label>
+          <input type="date" name="dateFin" th:value="${dateFin}" />
+        </div>
+        <button type="submit">Filtrer</button>
+        <a href="/stats">Réinitialiser</a>
+      </form>
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-row">
+        <span class="summary-label">Montant total tickets :</span>
+        <span th:text="${#numbers.formatDecimal(totalTickets, 1, 2)}">0.00</span> Ar
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Montant total publicités :</span>
+        <span th:text="${#numbers.formatDecimal(totalAds, 1, 2)}">0.00</span> Ar
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Montant total produits :</span>
+        <span th:text="${#numbers.formatDecimal(totalProducts, 1, 2)}">0.00</span> Ar
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">CHIFFRE D'AFFAIRES TOTAL :</span>
+        <span th:text="${#numbers.formatDecimal(grandTotal, 1, 2)}">0.00</span> Ar
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Film</th>
+          <th>Date</th>
+          <th>Heure début</th>
+          <th>Montant tickets</th>
+          <th>Montant publicités</th>
+          <th>Total séance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="r : ${rows}">
+          <td th:text="${r.filmTitle}">Film</td>
+          <td th:text="${#temporals.format(r.dateHeureDebut, 'dd/MM/yyyy')}">01/01/2026</td>
+          <td th:text="${#temporals.format(r.dateHeureDebut, 'HH:mm')}">10:00</td>
+          <td th:text="${#numbers.formatDecimal(r.ticketsRevenue, 1, 2)}">0.00</td>
+          <td th:text="${#numbers.formatDecimal(r.adsRevenue, 1, 2)}">0.00</td>
+          <td th:text="${#numbers.formatDecimal(r.total, 1, 2)}">0.00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
